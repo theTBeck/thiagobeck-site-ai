@@ -1,0 +1,178 @@
+/* Hero typography: uppercase and 15% larger across all breakpoints. */
+.hero {
+  --hero-ink: #fff;
+  color: var(--hero-ink);
+  text-transform: uppercase;
+}
+.hero h1 { color: #fff; font-size: clamp(124.2px, 17.595vw, 279.45px); }
+.hero-typography { display: contents; }
+.hero .hero-identity { min-width: 0; }
+.hero h1 { display: flex; flex-direction: column; gap: 13px; }
+.hero h1 .hero-name-mask {
+  display: block;
+  overflow: clip;
+  padding-block: .12em;
+  margin: -.12em 0;
+}
+.hero h1 .hero-name-line { display: block; margin: 0; }
+.hero-typography[data-motion="complete"] .hero-name-mask { overflow: visible; }
+.hero-top, .hero-role, .hero-aside, .hero-bottom { text-shadow: 0 2px 8px #000c; }
+.hero-top .eyebrow { font-size: 13.8px; }
+.hero-location { font-size: 13.8px; }
+.hero-role { font-size: 16.1px; line-height: 1.6; }
+.hero-aside { max-width: 370px; }
+.hero-message { margin-bottom: 30px; }
+.hero-statement {
+  font-size: 24.15px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: .025em;
+  margin-bottom: 12px;
+}
+.hero-disciplines { font-size: 18.4px; line-height: 1.75; letter-spacing: .025em; }
+.hero-explore { font-size: 16.1px; }
+.hero-bottom { color: var(--hero-ink); font-size: 13.8px; }
+.hero .play-circle, .hero .pause-button { border-color: var(--hero-ink); }
+.hero-explore:hover .play-circle { background: var(--hero-ink); color: #101113; }
+.hero :focus-visible { outline-color: var(--hero-ink); }
+.hero-sound-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 40px;
+  padding: 8px 13px;
+  border: 1px solid var(--hero-ink);
+  border-radius: 3px;
+  color: var(--hero-ink);
+  background: #101113b8;
+  font-size: 12.65px;
+  font-weight: 600;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.hero-sound-toggle svg { width: 18px; height: 18px; }
+.hero-sound-toggle:hover { background: #ffffff20; }
+
+/* Keep one header layout while the background changes between sections. */
+.site-header { text-transform: uppercase; }
+.site-header .brand-name { font-size: 17.25px; }
+.site-header .desktop-links { font-size: 16.1px; }
+.site-header .language-switch button,
+.site-header .menu-toggle .menu-label { font-size: 12.65px; }
+
+/* Header palette follows the hero; subsequent sections retain their colors. */
+.site-header.over-hero {
+  color: #fff;
+  --menu-glow: #ffffff40;
+}
+.site-header.over-hero .brand,
+.site-header.over-hero .monogram span { color: #fff; }
+.site-header.over-hero .desktop-links a:after { background: currentColor; }
+.site-header.over-hero .language-switch button { color: #fff; }
+.site-header.over-hero .language-switch button[aria-pressed=true] { color: #fff; }
+.site-header.over-hero :focus-visible { outline-color: #fff; }
+
+#work .section-heading { align-items: flex-start; }
+
+/* A named control with a gentle attention pulse and a clear open/close state. */
+.menu-toggle {
+  --menu-glow: #f2f3f440;
+  width: auto;
+  min-width: 108px;
+  height: 44px;
+  padding: 0 14px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  background: #10111370;
+  animation: menu-attention 3.2s ease-in-out infinite;
+  transition: background .2s, transform .2s;
+}
+.over-hero .menu-toggle { --menu-glow: #ffffff40; }
+.menu-toggle .menu-label {
+  width: auto;
+  height: auto;
+  background: none;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.menu-toggle .menu-glyph {
+  width: 22px;
+  height: 16px;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+.menu-glyph i {
+  display: block;
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+  transition: transform .25s;
+}
+.menu-toggle.is-open > span.menu-label,
+.menu-toggle.is-open > span.menu-glyph { transform: none; }
+.menu-toggle.is-open .menu-glyph i:first-child { transform: translateY(3.5px) rotate(45deg); }
+.menu-toggle.is-open .menu-glyph i:last-child { transform: translateY(-3.5px) rotate(-45deg); }
+.menu-toggle:hover { background: #ffffff12; transform: translateY(-1px); }
+.menu-toggle.is-open { animation: none; }
+@keyframes menu-attention {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 5px var(--menu-glow); }
+}
+
+@media (min-width:761px) and (max-width:1100px) {
+  .hero h1 { font-size: 20.7vw; }
+  .hero-aside { max-width: 310px; }
+  .hero-role { font-size: 14.95px; max-width: 520px; }
+  .hero-statement { font-size: 21.85px; }
+  .hero-disciplines { font-size: 16.1px; }
+  .site-header .desktop-links { font-size: 13.8px; gap: 18px; }
+  .header-tools { gap: 15px; }
+}
+@media (max-width:760px) {
+  .hero h1 { font-size: clamp(119.025px, 27.945vw, 191.475px); }
+  .hero h1 { gap: 12px; }
+  .hero-main { bottom: 130px; }
+  .hero-top .eyebrow { font-size: 11.5px; max-width: 190px; }
+  .hero-location { font-size: 11.5px; }
+  .hero-role { font-size: 12.65px; max-width: 100%; line-height: 1.7; }
+  .hero-aside { display: block; max-width: none; margin-top: 26px; }
+  .hero-message { margin-bottom: 18px; }
+  .hero-statement { font-size: 20.7px; margin-bottom: 8px; }
+  .hero-disciplines { font-size: 13.8px; line-height: 1.65; letter-spacing: .025em; }
+  .hero-explore { font-size: 13.8px; max-width: none; width: fit-content; margin-top: 0; }
+  .hero-bottom { font-size: 11.5px; display: grid; grid-template-columns: 1fr auto; row-gap: 10px; }
+  .hero-bottom .hero-controls { display: contents; }
+
+  .hero-sound-toggle { grid-column: 1; grid-row: 2; justify-self: start; }
+  .hero-controls .pause-button { grid-column: 2; grid-row: 2; justify-self: end; }
+  .hero-bottom>div>span { max-width: 160px; }
+  .header-tools { gap: 12px; }
+  .menu-toggle { min-width: 88px; height: 40px; padding: 0 10px; gap: 10px; }
+  .menu-toggle .menu-label { font-size: 10px; }
+  .site-header .menu-toggle .menu-label { font-size: 11.5px; }
+  .site-header .brand-name { font-size: 14.95px; }
+  .menu-toggle .menu-glyph, .menu-glyph i { width: 18px; }
+}
+@media (max-width:370px) {
+  .hero h1 { font-size: 115.92px; }
+  .header-tools { gap: 7px; }
+  .brand { gap: 9px; }
+  .menu-toggle { min-width: 80px; padding: 0 8px; }
+  .site-header .language-switch button { font-size: 11.5px; }
+  .hero-statement { font-size: 19.55px; }
+  .hero-bottom { gap: 10px; }
+  .hero-bottom>div>span { max-width: 115px; }
+}
+

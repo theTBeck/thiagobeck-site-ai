@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env*
+__pycache__/
+*.log
+.npm-cache/
+.build/
+.preview.pid

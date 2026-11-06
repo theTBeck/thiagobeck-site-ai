@@ -1,0 +1,17 @@
+.standalone-reel{min-height:100dvh;display:flex;flex-direction:column;gap:16px;padding:18px 3vw 22px;background:#050505;color:#fff;font-family:'Manrope',sans-serif}
+.standalone-reel-top,.standalone-reel-controls{width:100%;max-width:1600px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:22px}
+.standalone-reel-top{min-height:36px;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+.standalone-reel-top>a{padding:9px 0;border-bottom:1px solid #fff8}
+.standalone-reel-top>a:hover{border-color:#fff}
+.standalone-reel-top>span{color:#aeb4b8}
+.standalone-reel-stage{flex:1;min-height:0;display:grid;place-items:center}
+.standalone-reel-stage>video{display:block;width:auto;max-width:100%;height:auto;max-height:calc(100dvh - 152px);aspect-ratio:16/9;object-fit:contain;background:#000;cursor:pointer}
+.standalone-reel-controls{min-height:52px;padding-top:9px;border-top:1px solid #ffffff35}
+.standalone-reel-controls button{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:145px;min-height:40px;padding:6px 10px;color:#fff;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.standalone-reel-controls button:hover{background:#ffffff18}
+.standalone-reel-controls button>span:first-child{width:19px;text-align:center;font-size:18px;line-height:1}
+.standalone-reel-timeline{display:flex;align-items:center;gap:16px;flex:1;max-width:900px}
+.standalone-reel-timeline input{width:100%;accent-color:#fff;cursor:pointer}
+.standalone-reel-timeline span{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap;color:#d3d6d8}
+.standalone-reel-error{text-align:center;color:#fff}
+@media(max-width:760px){.standalone-reel{padding:14px 4vw 20px;gap:12px}.standalone-reel-top{font-size:9px}.standalone-reel-stage>video{width:100%;max-height:calc(100dvh - 150px)}.standalone-reel-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.standalone-reel-controls button{min-width:0}.standalone-reel-timeline{grid-column:1/-1;grid-row:1;max-width:none}}

@@ -1,0 +1,22 @@
+{
+  "name": "thiago-beck-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "prepare:content": "node scripts/export-content.mjs && node scripts/prepare.mjs",
+    "check:content": "node scripts/export-content.mjs && node scripts/prepare.mjs --check",
+    "build": "npm run prepare:content && vite build && node scripts/locales.mjs",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@fontsource/barlow-condensed": "5.3.0",
+    "@fontsource/manrope": "5.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "gsap": "3.15.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "vite": "8.3.5"
+  }
+}
