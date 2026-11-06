@@ -155,7 +155,12 @@ export const toolGroups = [
 ];
 export const featureCredits = ['Mission: Impossible III','Quantum of Solace','Ocean’s Twelve','The Dreamers','The Brothers Grimm','Exorcist: The Beginning','La grande bellezza','Il divo','Romanzo criminale'];
 
-const base='https://thetbeck.github.io/DoPSite_Reel/';
+const firstFilmVolume=new Set(['Curta-desaparecido.mp4','Exilados-doc.mp4','Hidro.mp4','HistoriaDavi-doc.mp4','Honda-Reality03.mp4','Hondad-Reality01.mp4','NikeFootbal.mp4','SteveSpigel-curtasequenciq.mp4']);
+const archiveFilmUrl=file=>{
+  const name=decodeURIComponent(file);
+  const volume=firstFilmVolume.has(name)?'DoPSite-films-1':'DoPSite-films-2';
+  return 'https://thetbeck.github.io/'+volume+'/'+encodeURIComponent(name);
+};
 export const archiveGroups = {
  documentary:t('Documentário','Documentary','Documentari'),
  reality:t('Reality','Reality','Reality'),
@@ -171,4 +176,4 @@ export const archive = [
  ['Cup Noodles','Cupnoodles.mp4','advertising','cup-noodles'],['Epson Canudos','Epson-canudos.mp4','advertising'],['Granola','Granola.mp4','advertising','granola'],
  ['Hidro','Hidro.mp4','advertising'],['Indaiá','Indaia.mp4','advertising'],['Jeep Renegade','Jeep-RENEGADE.mp4','advertising'],
  ['Marisa','Marisa.mp4','advertising'],['Ora GWM','Ora3GWM.mp4','advertising'],['Rico João','Rico%20Joao.mp4','advertising'],['Sonic Telecine','Sonic-TELECINE.mp4','advertising'],['Sony Bravia','SonyBRAVIA.mp4','advertising','sony-bravia'],['Tata Exa','TataExa.mp4','advertising'],['Tim Genius','Tim-Genius.mp4','advertising'],['Zaxy','Zaxy.mp4','advertising']
-].map(([title,file,group,projectId])=>({title,url:base+file,group,projectId}));
+].map(([title,file,group,projectId])=>({title,url:archiveFilmUrl(file),group,projectId}));
