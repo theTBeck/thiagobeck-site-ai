@@ -61,7 +61,7 @@ export default function useHeroEntrance(rootRef, playedRef) {
           })));
           gsap.set(copy, { opacity: 1 });
           timeline = gsap.timeline({ defaults: { ease: 'power3.out' } });
-          timeline.fromTo(names, { yPercent: 115, opacity: 1 },
+          if (names.length) timeline.fromTo(names, { yPercent: 115, opacity: 1 },
             { yPercent: 0, duration: .75, stagger: .1 }, 0);
           timeline.to(top, { opacity: 1, duration: .35 }, 0);
           const timings = [

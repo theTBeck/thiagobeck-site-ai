@@ -9,10 +9,7 @@ export default function HeroTypography({ labels, playedRef, reelHref, playIcon, 
     <div className="hero-main">
       <div className="hero-identity">
         <p className="hero-role">{labels.role}</p>
-        <h1 id="hero-title" aria-label="THIAGO BECK">
-          <span className="hero-name-mask" aria-hidden="true"><span className="hero-name-line">THIAGO</span></span>
-          <span className="hero-name-mask" aria-hidden="true"><span className="hero-name-line">BECK</span></span>
-        </h1>
+        <h1 id="hero-title" aria-label="Estudio CINE.BECK"><span className="hero-studio">Estudio</span><span className="hero-mark">CINE.BECK</span></h1>
       </div>
       <div className="hero-aside">
         <div className="hero-message"><p className="hero-statement">{labels.heading}</p><p className="hero-disciplines">{labels.body}</p></div>

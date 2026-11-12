@@ -69,7 +69,7 @@
 /* Feature editorial headings and film journeys. */
 .work-section .section-heading{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:center;gap:5vw;margin-bottom:75px}
 .work-section .section-heading h2{font-size:clamp(90px,10.5vw,230px);line-height:.82;letter-spacing:.04em;transform:scaleY(1.16);transform-origin:left center}
-.work-section .section-heading>p{max-width:760px;margin:0;color:#f2f1ee;font-family:'Manrope',sans-serif;font-size:clamp(24px,1.6vw,36px);font-weight:400;font-style:normal;letter-spacing:.045em;line-height:1.48;white-space:pre-line;text-wrap:balance}
+.work-section .section-heading>p{max-width:760px;margin:0;color:#f2f1ee;font-family:'Manrope',sans-serif;font-size:clamp(15px,1.02vw,20px);font-weight:400;font-style:normal;letter-spacing:.11em;line-height:1.9;white-space:pre-line;text-wrap:pretty}
 .work-section .project-grid{margin-top:0}
 .reel-lane{aspect-ratio:auto;min-width:0;overflow:visible;align-self:start}
 .reel-lane::after{display:none}
@@ -100,11 +100,82 @@
 .contact-methods{display:grid;gap:10px;min-width:min(100%,390px)}
 .email-link{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 0;border-bottom:1px solid #15191d60;font-size:14px}
 .email-link svg{width:18px;height:18px;flex:none}
-@media(max-width:1100px){.work-section .section-heading{grid-template-columns:1fr 1fr;gap:30px}.work-section .section-heading h2{font-size:clamp(82px,12vw,150px)}.work-section .section-heading>p{font-size:18px}.beyond-grid{gap:18px}.book-art,.website-art,.instagram-art{height:245px}}
-@media(max-width:760px){.work-section .section-heading{display:block;margin-bottom:38px}.work-section .section-heading h2{font-size:clamp(65px,17vw,110px);letter-spacing:.025em}.work-section .section-heading>p{margin-top:32px;font-size:17px;line-height:1.5}.reel-lane>.reel-lane-media{aspect-ratio:1.6}.reel-lane>.reel-lane-panel{padding:0 22px}.reel-lane.is-open .reel-lane-panel{padding:22px;max-height:750px}.entertainment-films{grid-template-columns:1fr}.beyond-grid{grid-template-columns:1fr;gap:40px}.book-art,.website-art,.instagram-art{height:300px}.contact-methods{margin-top:18px}}
+@media(max-width:1100px){.work-section .section-heading{grid-template-columns:1fr 1fr;gap:30px}.work-section .section-heading h2{font-size:clamp(82px,12vw,150px)}.work-section .section-heading>p{font-size:15px;letter-spacing:.1em;line-height:1.9}.beyond-grid{gap:18px}.book-art,.website-art,.instagram-art{height:245px}}
+@media(max-width:760px){.work-section .section-heading{display:block;margin-bottom:38px}.work-section .section-heading h2{font-size:clamp(65px,17vw,110px);letter-spacing:.025em}.work-section .section-heading>p{margin-top:32px;font-size:14px;letter-spacing:.09em;line-height:1.85}.reel-lane>.reel-lane-media{aspect-ratio:1.6}.reel-lane>.reel-lane-panel{padding:0 22px}.reel-lane.is-open .reel-lane-panel{padding:22px;max-height:750px}.entertainment-films{grid-template-columns:1fr}.beyond-grid{grid-template-columns:1fr;gap:40px}.book-art,.website-art,.instagram-art{height:300px}.contact-methods{margin-top:18px}}
 @media(prefers-reduced-motion:reduce){.preview-journey>img,.instagram-art img{transition:none}.book-card:hover .preview-journey>img:first-child,.website-card:hover .preview-journey>img:first-child,.instagram-card:hover .instagram-art img{transform:none}.reel-lane>.reel-lane-panel{transition:none}}
 
 /* Give longer copy more breathing room without changing captions or navigation. */
 .about-copy>.large-copy{letter-spacing:.025em;line-height:1.84}
 .about-copy>p:not(.large-copy),.food-copy>p:not(.eyebrow),.packshot-copy>p:not(.eyebrow),.entertainment-copy>p:not(.eyebrow),.service-row p,.process-steps p,.beyond-copy p,.contact-bottom>p{letter-spacing:.025em;line-height:1.85}
 .reels-section .section-heading>p,.archive-heading p:not(.eyebrow),.feature-credits>div>p:last-child,.toolbox>div>p,.dialog-copy>p{letter-spacing:.025em;line-height:1.85}
+.about-section .career-since{display:block;max-width:12em;font-family:var(--display);font-size:clamp(28px,2.6vw,46px);font-weight:500;line-height:1.05;letter-spacing:.06em;color:#f2f3f4;text-transform:uppercase}
+.food-image{height:100%}
+.food-image>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.service-photo>video{display:block;width:100%;height:650px;object-fit:cover}
+.packshot-visual>video{display:block;width:100%;aspect-ratio:1/1.07;object-fit:cover}
+@media(max-width:1100px){.service-photo>video{height:550px}}
+@media(max-width:760px){.packshot-visual>video{aspect-ratio:1.15}}
+
+/* Editorial paragraphs share the Features text box: Manrope, open tracking, tall leading. */
+.work-section .section-heading>p,
+.reels-section .section-heading>p,
+.process-section .section-heading>p,
+.archive-heading p:not(.eyebrow),
+.about-copy>.large-copy,
+.about-copy>p,
+.food-copy>p:not(.eyebrow),
+.packshot-copy>p:not(.eyebrow),
+.entertainment-copy>p:not(.eyebrow),
+.service-row p,
+.process-steps p,
+.toolbox>div>p,
+.beyond-copy p,
+.contact-bottom>p,
+.feature-credits>div>p,
+.dialog-copy>p,
+.reel-lane-panel p{
+  font-family:'Manrope',sans-serif;
+  font-size:clamp(15px,1.02vw,20px);
+  font-weight:400;
+  font-style:normal;
+  letter-spacing:.11em;
+  line-height:1.9;
+}
+@media(max-width:1100px){
+  .work-section .section-heading>p,
+  .reels-section .section-heading>p,
+  .process-section .section-heading>p,
+  .archive-heading p:not(.eyebrow),
+  .about-copy>.large-copy,
+  .about-copy>p,
+  .food-copy>p:not(.eyebrow),
+  .packshot-copy>p:not(.eyebrow),
+  .entertainment-copy>p:not(.eyebrow),
+  .service-row p,
+  .process-steps p,
+  .toolbox>div>p,
+  .beyond-copy p,
+  .contact-bottom>p,
+  .feature-credits>div>p,
+  .dialog-copy>p,
+  .reel-lane-panel p{font-size:15px;letter-spacing:.1em;line-height:1.9}
+}
+@media(max-width:760px){
+  .work-section .section-heading>p,
+  .reels-section .section-heading>p,
+  .process-section .section-heading>p,
+  .archive-heading p:not(.eyebrow),
+  .about-copy>.large-copy,
+  .about-copy>p,
+  .food-copy>p:not(.eyebrow),
+  .packshot-copy>p:not(.eyebrow),
+  .entertainment-copy>p:not(.eyebrow),
+  .service-row p,
+  .process-steps p,
+  .toolbox>div>p,
+  .beyond-copy p,
+  .contact-bottom>p,
+  .feature-credits>div>p,
+  .dialog-copy>p,
+  .reel-lane-panel p{font-size:14px;letter-spacing:.09em;line-height:1.85}
+}

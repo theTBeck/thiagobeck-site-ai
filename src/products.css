@@ -71,9 +71,27 @@
 
 /* Give the techniques title and introduction the same editorial weight as Features. */
 .products-heading{display:grid;grid-template-columns:minmax(0,1.23fr) minmax(0,.77fr);align-items:center;gap:5vw;margin-bottom:75px}
-.products-heading h2{font-size:clamp(58px,6.2vw,140px);line-height:.82;letter-spacing:.025em;transform:scaleY(1.12);transform-origin:left center}
-.products-heading>p{max-width:650px;padding:0;color:#f2f1ee;font-family:'Manrope',sans-serif;font-size:clamp(21px,1.4vw,31px);font-weight:400;font-style:normal;letter-spacing:.045em;line-height:1.48;text-wrap:balance}
-@media(max-width:1100px){.products-heading{grid-template-columns:1.15fr .85fr;gap:30px}.products-heading h2{font-size:clamp(55px,7vw,90px)}.products-heading>p{font-size:18px}}
-@media(max-width:760px){.products-heading{display:block;margin-bottom:38px}.products-heading h2{font-size:clamp(43px,9vw,66px)}.products-heading>p{margin-top:30px;font-size:17px;line-height:1.5}}
+.products-heading h2{width:max-content;max-width:100%;font-size:187px;line-height:.7;letter-spacing:.01em;transform:none;white-space:pre-line}
+.products-heading>p{max-width:650px;padding:0;color:#f2f1ee;text-wrap:pretty}
+.product-visual-media>video.product-loop{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:none}
+@media(max-width:1100px){.products-heading{grid-template-columns:1.15fr .85fr;gap:30px}.products-heading h2{width:100%;font-size:clamp(64px,8vw,96px)}}
+@media(max-width:760px){.products-heading{display:block;margin-bottom:38px}.products-heading h2{font-size:clamp(48px,12vw,72px)}.products-heading>p{margin-top:30px}}
 
-.product-story>p,.product-entry>div>p,.products-footer p{letter-spacing:.025em;line-height:1.85}
+.products-heading>p,
+.product-story>p,
+.product-entry>div>p,
+.product-entry dd,
+.products-footer p{
+  font-family:'Manrope',sans-serif;
+  font-size:clamp(15px,1.02vw,20px);
+  font-weight:400;
+  font-style:normal;
+  letter-spacing:.11em;
+  line-height:1.9;
+}
+@media(max-width:1100px){
+  .products-heading>p,.product-story>p,.product-entry>div>p,.product-entry dd,.products-footer p{font-size:15px;letter-spacing:.1em;line-height:1.9}
+}
+@media(max-width:760px){
+  .products-heading>p,.product-story>p,.product-entry>div>p,.product-entry dd,.products-footer p{font-size:14px;letter-spacing:.09em;line-height:1.85}
+}

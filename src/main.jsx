@@ -5,7 +5,7 @@ import '@fontsource/barlow-condensed/latin-500.css';
 import '@fontsource/manrope/latin-400.css';
 import '@fontsource/manrope/latin-500.css';
 import '@fontsource/manrope/latin-600.css';
-import { ui, text, projects as sourceProjects, cupNoodlesProject as sourceCupNoodlesProject, services, steps, toolGroups, featureCredits, archive, archiveGroups, languages, languageNames } from './content';
+import { ui, text, projects as sourceProjects, services, steps, toolGroups, featureCredits, archive, archiveGroups, languages, languageNames } from './content';
 import { sitePath, localePath } from './paths';
 import ProductsSection from './ProductsSection';
 import HoverClip from './HoverClip';
@@ -15,6 +15,10 @@ import { productGroups, productUI } from './products';
 import './style.css';
 import './hero.css';
 
+const bebasFace = new FontFace('Bebas Neue', `url(${sitePath('fonts/bebas-neue-latin-400.woff2')})`, { weight: '400', display: 'swap' });
+document.fonts.add(bebasFace);
+bebasFace.load().catch(() => {});
+
 const Arrow = ({diagonal=false,...props}) => <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}><path d={diagonal?'M5 19 19 5M5 5h14v14':'M4 12h16m-6-6 6 6-6 6'} stroke="currentColor" strokeWidth="1.5"/></svg>;
 const Play = props => <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}><path d="m9 5 11 7-11 7V5Z" fill="currentColor"/></svg>;
 const Sound = ({muted}) => <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M11 4 6 8H3v8h3l5 4V4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>{muted?<path d="m16 9 6 6m0-6-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>:<path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>}</svg>;
@@ -22,8 +26,7 @@ const Close = () => <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><pat
 const typeLabel = { ai:'ai', filmed:'filmed', hybrid:'hybridFilm' };
 const hostedProject = project => ({...project,image:sitePath(project.image),video:sitePath(project.video)});
 const projects = sourceProjects.map(hostedProject);
-const cupNoodlesProject = hostedProject(sourceCupNoodlesProject);
-const allProjects = [...projects,cupNoodlesProject];
+const allProjects = projects;
 const clipByProject = {'sonic-telecine':'sonic-telecine','sony-bravia':'sony-bravia',granola:'food','amazon-rally':'amazon-rally-agua','steve-spiegel':'characters','ram-monster':'worlds-performance','cup-noodles':'concept',jetour:'jetour'};
 const clipFor=id=>sitePath('media/loops/'+clipByProject[id]+'.mp4');
 const startLocale=()=>languages.find(lang=>location.pathname.split('/').includes(lang))||'pt';
@@ -46,7 +49,7 @@ function FilmDialog({project,lang,onClose,onNext}) {
     <div className="dialog-inner">
       <div className="dialog-top"><span className="eyebrow">{tx('filmLabel')}</span><button className="icon-button" onClick={onClose} aria-label={tx('close')} autoFocus><Close/></button></div>
       <div className="dialog-player">
-        <video key={source} controls playsInline preload="metadata" poster={project.image} src={source} onError={()=>setFailed(true)} />
+        <video key={source} controls muted playsInline preload="metadata" poster={project.image} src={source} onPlay={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}} onVolumeChange={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}} onError={()=>setFailed(true)} />
         {failed&&<p className="video-error">{tx('playbackError')} <a href={source} target="_blank" rel="noreferrer">{tx('sourceLink')} ↗</a></p>}
       </div>
       <div className="dialog-details">
@@ -70,7 +73,7 @@ function App(){
   const [query,setQuery]=useState('');
   const [archiveFilter,setArchiveFilter]=useState('all');
   const [playing,setPlaying]=useState(false);
-  const [heroMuted,setHeroMuted]=useState(false);
+  const [heroMuted,setHeroMuted]=useState(true);
   const [onHero,setOnHero]=useState(true);
   const [reduceMotion,setReduceMotion]=useState(()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [activeService,setActiveService]=useState('advertising');
@@ -94,9 +97,23 @@ function App(){
   },[]);
   useEffect(()=>{
     document.documentElement.lang=lang==='pt'?'pt-BR':lang;
-    document.title='Thiago Beck — '+text(ui.role,lang);
+    document.title='Estudio CINE.BECK — '+text(ui.role,lang);
     document.querySelector('meta[name="description"]').setAttribute('content',text(ui.heroBody,lang)+' '+text(ui.role,lang)+'.');
   },[lang]);
+  useEffect(()=>{
+    const lock=media=>{
+      if(!(media instanceof HTMLMediaElement))return;
+      if(media.muted&&media.volume===0)return;
+      media.muted=true;
+      media.defaultMuted=true;
+      media.volume=0;
+    };
+    const onMedia=event=>lock(event.target);
+    document.querySelectorAll('video,audio').forEach(lock);
+    document.addEventListener('play',onMedia,true);
+    document.addEventListener('volumechange',onMedia,true);
+    return()=>{document.removeEventListener('play',onMedia,true);document.removeEventListener('volumechange',onMedia,true);};
+  },[]);
   useEffect(()=>{
     const observer=new IntersectionObserver(([entry])=>setOnHero(entry.isIntersecting),{rootMargin:'-86px 0px 0px 0px'});
     if(heroSection.current)observer.observe(heroSection.current);
@@ -106,17 +123,17 @@ function App(){
     const video=hero.current;
     let disposed=false;
     let resumeOnReturn=false;
-    // Start with the original soundtrack; browser policy may require muted playback.
-    const playWithFallback=()=>video.play().catch(async error=>{
-      if(disposed||error.name!=='NotAllowedError')return;
+    const playMuted=()=>{
       video.muted=true;
+      video.defaultMuted=true;
+      video.volume=0;
       setHeroMuted(true);
-      try{await video.play();}catch{if(!disposed)setPlaying(false);}
-    });
-    playWithFallback();
+      return video.play().catch(()=>{if(!disposed)setPlaying(false);});
+    };
+    playMuted();
     const observer=new IntersectionObserver(([entry])=>{
       if(entry.isIntersecting){
-        if(resumeOnReturn){resumeOnReturn=false;playWithFallback();}
+        if(resumeOnReturn){resumeOnReturn=false;playMuted();}
       }else if(!video.paused){
         resumeOnReturn=true;
         video.pause();
@@ -143,11 +160,13 @@ function App(){
   function changeLanguage(next){
     setLang(next);history.pushState({},'',localePath(next)+location.search+location.hash);
   }
-  function toggleHeroSound(){
+  function keepHeroSilent(){
     const video=hero.current;
-    video.muted=!video.muted;
-    setHeroMuted(video.muted);
-    if(!video.muted&&video.paused)video.play().catch(()=>setPlaying(false));
+    if(!video)return;
+    video.muted=true;
+    video.defaultMuted=true;
+    video.volume=0;
+    setHeroMuted(true);
   }
   function navigate(id,kind){
     setMenu(false);
@@ -174,7 +193,7 @@ function App(){
   return <>
     <a className="skip-link" href="#main">{tx('skip')}</a>
     <header className={'site-header '+(menu?'menu-open ':'')+(onHero?'over-hero':'')}>
-      <a href={localePath(lang)} className="brand" aria-label="Thiago Beck"><span className="monogram">TB<span>.</span></span><span className="brand-name">THIAGO<br/>BECK</span></a>
+      <a href={localePath(lang)} className="brand" aria-label="Estudio CINE.BECK"><span className="brand-name brand-name--short">C.BECK</span></a>
       <nav className="desktop-links" aria-label={tx('menu')}>{navLink('work',tx('work'))}{navLink('products',text(productUI.title,lang))}{navLink('about',tx('about'))}{navLink('contact',tx('contact'))}</nav>
       <div className="header-tools"><div className="language-switch" aria-label={tx('language')}>{languages.map(code=><button key={code} lang={code} aria-label={languageNames[code]} aria-pressed={lang===code} onClick={()=>changeLanguage(code)}>{code==='pt'?'PT':code.toUpperCase()}</button>)}</div>
       <button ref={menuTrigger} className={'menu-toggle '+(menu?'is-open':'')} aria-label={menu?tx('close'):tx('menu')} aria-expanded={menu} aria-controls="mega-menu" onClick={()=>setMenu(v=>!v)}><span className="menu-label">{menu?tx('close'):tx('menuLabel')}</span><span className="menu-glyph" aria-hidden="true"><i/><i/></span></button></div>
@@ -189,10 +208,10 @@ function App(){
     </>}
     <main id="main">
       <section ref={heroSection} className="hero" aria-labelledby="hero-title">
-        <video ref={hero} className="hero-video" src={sitePath('media/hero-reel-novo-v1.mp4')} poster={sitePath('media/hero-reel-novo-v1.jpg')} muted={heroMuted} loop playsInline autoPlay preload="auto" onPlay={()=>setPlaying(true)} onPause={()=>setPlaying(false)} onVolumeChange={event=>setHeroMuted(event.currentTarget.muted)} aria-hidden="true"/>
+        <video ref={hero} className="hero-video" src={sitePath('media/hero-reel-novo-v1.mp4')} poster={sitePath('media/hero-reel-novo-v1.jpg')} muted loop playsInline autoPlay preload="auto" onPlay={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}setPlaying(true);setHeroMuted(true);}} onPause={()=>setPlaying(false)} onVolumeChange={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}setHeroMuted(true);}} aria-hidden="true"/>
         <div className="hero-shade"/>
         <HeroTypography key={lang} playedRef={heroEntrancePlayed} labels={{label:tx('heroLabel'),countries:tx('countries'),role:tx('heroRole'),heading:tx('heroHeading'),body:tx('heroBody'),watch:tx('watch')}} reelHref={localePath(lang,'reel/')} playIcon={<Play/>} arrowIcon={<Arrow diagonal/>}/>
-        <div className="hero-bottom"><a href="#work" onClick={e=>{e.preventDefault();navigate('work');}}><span className="down-arrow">↓</span>{tx('work')}</a><div className="hero-controls"><button className="hero-sound-toggle" onClick={toggleHeroSound} aria-label={tx(heroMuted?'enableSound':'disableSound')} aria-pressed={!heroMuted}><Sound muted={heroMuted}/><span>{tx(heroMuted?'enableSound':'disableSound')}</span></button><button className="pause-button" onClick={()=>{if(playing)hero.current.pause();else hero.current.play().catch(()=>setPlaying(false));}} aria-label={tx(playing?'pause':'play')}>{playing?<span className="pause-bars">Ⅱ</span>:<Play/>}</button></div></div>
+        <div className="hero-bottom"><a href="#work" onClick={e=>{e.preventDefault();navigate('work');}}><span className="down-arrow">↓</span>{tx('work')}</a><div className="hero-controls"><button className="hero-sound-toggle" onClick={keepHeroSilent} aria-label={tx('soundOff')} aria-pressed="true"><Sound muted/><span>{tx('soundOff')}</span></button><button className="pause-button" onClick={()=>{if(playing)hero.current.pause();else hero.current.play().catch(()=>setPlaying(false));}} aria-label={tx(playing?'pause':'play')}>{playing?<span className="pause-bars">Ⅱ</span>:<Play/>}</button></div></div>
       </section>
       <section id="work" className="work-section section-shell">
         <div className="section-heading"><div><p className="eyebrow">{tx('selectedLabel')}</p><h2>{tx('selected')}</h2></div><p>{tx('selectedBody')}</p></div>
@@ -204,7 +223,7 @@ function App(){
       <ProductsSection lang={lang} groupId={productGroup} onGroupChange={setProductGroup} onExplore={()=>navigate('work')}/>
       <section id="reels" className="reels-section section-shell">
         <div className="section-heading"><h2 className="display-title">{tx('reelsTitle')}</h2><p>{tx('reelsIntro')}</p></div>
-        <div className="reel-lanes">{[['ai','jetour-driver','aiReel','jetour-driver'],['filmed','sony-bravia-model','filmedReel','sony-bravia-model'],['hybrid','cup-noodles','hybridReel','concept']].map(([kind,id,body,clip])=>{
+        <div className="reel-lanes">{[['ai','cup-noodles','aiReel','concept'],['filmed','sony-bravia-model','filmedReel','sony-bravia-model'],['hybrid','sonic-agua-vfx','hybridReel','vfx']].map(([kind,id,body,clip])=>{
           const opened=activeProcess===kind;
           const title=kind==='filmed'?tx('filmedReelTitle'):tx(kind);
           return <article key={kind} className={'reel-lane reel-lane-'+kind+(opened?' is-open':'')} onMouseEnter={()=>setActiveProcess(kind)} onMouseLeave={()=>setActiveProcess(null)} onFocus={()=>setActiveProcess(kind)} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))setActiveProcess(null)}}>
@@ -215,12 +234,12 @@ function App(){
         })}</div>
       </section>
       <section id="food-feature" className="food-feature">
-        <div className="food-image has-hover-clip"><img src={sitePath('media/granola.jpg')} alt="" loading="lazy"/><HoverClip src={sitePath('media/loops/food.mp4')} poster={sitePath('media/granola.jpg')}/></div>
+        <div className="food-image"><video src={sitePath('media/food-reel.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true" onPlay={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}} onVolumeChange={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}}/></div>
         <div className="food-copy"><p className="eyebrow">{tx('foodEyebrow')}</p><h2 className="display-title">{tx('foodTitle')}</h2><p>{tx('foodBody')}</p></div>
       </section>
       <section id="packshot-feature" className="packshot-section section-shell">
         <div className="packshot-copy"><p className="eyebrow">{tx('packLabel')}</p><h2>{tx('packTitle')}</h2><p>{tx('packBody')}</p><span className="eyebrow pack-items">{tx('packItems')}</span><a className="text-button" href={whatsapp(lang)} target="_blank" rel="noreferrer">{tx('projectCta')}<Arrow diagonal/></a></div>
-        <div className="packshot-visual has-hover-clip"><img src={sitePath('media/cup-noodles.jpg')} alt="" loading="lazy"/><HoverClip src={sitePath('media/loops/concept.mp4')} poster={sitePath('media/cup-noodles.jpg')}/></div>
+        <div className="packshot-visual"><video src={sitePath('media/packshoot-reel.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true" onPlay={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}} onVolumeChange={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}}/></div>
       </section>
       <section id="entertainment-feature" className="entertainment-feature has-hover-clip">
         <img src={sitePath('media/steve-spiegel.jpg')} alt="" loading="lazy"/><HoverClip src={sitePath('media/loops/characters.mp4')} poster={sitePath('media/steve-spiegel.jpg')}/><div className="entertainment-shade"/><div className="entertainment-copy"><p className="eyebrow">{tx('entertainment')}</p><h2 className="display-title">{tx('entertainmentTitle')}</h2><p>{tx('entertainmentBody')}</p><div className="entertainment-films">{[['Steve Spiegel','steve-spiegel.mp4'],['A História de Davi Santos','historia-davi.mp4'],['Nike Football','nike-football.mp4'],['Epson Canudos','epson-canudos.mp4']].map(([title,file])=><a key={file} className="text-button light" href={sitePath('media/'+file)} target="_blank" rel="noreferrer">{title}<Arrow diagonal/></a>)}</div></div>
@@ -232,21 +251,21 @@ function App(){
             <button aria-expanded={activeService===s.id} aria-controls={'service-content-'+s.id} onClick={()=>setActiveService(activeService===s.id?null:s.id)}>{text(s.title,lang)}<span>{activeService===s.id?'−':'+'}</span></button>
             <div id={'service-content-'+s.id} hidden={activeService!==s.id}><p>{text(s.description,lang)}</p><a href={whatsapp(lang)} target="_blank" rel="noreferrer">{tx('projectCta')} ↗</a></div>
           </div>)}</div>
-          <div className="service-photo has-hover-clip"><img src={sitePath('media/expertise-universos.jpg')} alt="" loading="lazy"/><HoverClip src={sitePath('media/loops/expertise-universos.mp4')} poster={sitePath('media/expertise-universos.jpg')}/><span className="vertical-note">THIAGO BECK / IMAGEM · IMAGE · IMMAGINE</span></div>
+          <div className="service-photo"><video src={sitePath('media/hero-reel-novo-v1.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true" onPlay={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}} onVolumeChange={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}}/><span className="vertical-note">CINE BECK / IMAGEM · IMAGE · IMMAGINE</span></div>
         </div>
       </section>
       <section id="archive" className="archive-section section-shell"><div className="archive-heading"><div><p className="eyebrow">{tx('archiveLabel')}</p><h2>{tx('archive')}</h2><p>{tx('archiveBody')}</p></div><button className="round-arrow" aria-label={tx('archiveOpen')} aria-expanded={archiveOpen} aria-controls="archive-panel" onClick={()=>setArchiveOpen(v=>!v)}>{archiveOpen?<Close/>:<Arrow diagonal/>}</button></div>
         <div id="archive-panel" hidden={!archiveOpen}><div className="archive-controls"><label className="search-field"><span>{tx('search')}</span><input type="search" placeholder={tx('search')} value={query} onChange={e=>setQuery(e.target.value)}/></label><div className="archive-filters">{['all',...Object.keys(archiveGroups)].map(group=><button key={group} aria-pressed={archiveFilter===group} onClick={()=>setArchiveFilter(group)}>{group==='all'?tx('all'):text(archiveGroups[group],lang)}</button>)}</div></div>
           <p className="fineprint">{tx('archiveNotice')}</p><div className="archive-list">{foundArchive.map(p=><button key={p.title} onClick={()=>openProject(allProjects.find(x=>x.id===p.projectId)||p)}><span>{p.title}</span><small>{text(archiveGroups[p.group],lang)}</small><Arrow diagonal/></button>)}</div>{!foundArchive.length&&<p className="empty-search" role="status">{tx('noResults')}</p>}
         </div></section>
-      <section id="about" className="about-section section-shell"><p className="eyebrow">{tx('aboutKicker')}</p><div className="about-grid"><h2 className="display-title">{tx('aboutTitle')}</h2><div className="about-copy"><p className="large-copy">{tx('bio')}</p><p className="vision-copy">{tx('vision')}</p><p>{tx('education')}</p><div className="career-stats"><div><strong>2003</strong><span>{tx('since')}</span></div></div></div></div>
+      <section id="about" className="about-section section-shell"><p className="eyebrow">{tx('aboutKicker')}</p><div className="about-grid"><h2 className="display-title">{tx('aboutTitle')}</h2><div className="about-copy"><p className="large-copy">{tx('bio')}</p><p className="vision-copy">{tx('vision')}</p><p>{tx('education')}</p><div className="career-stats"><div><span className="career-since">{tx('since')}</span></div></div></div></div>
         <div className="feature-credits"><div><p className="eyebrow">{tx('creditsTitle')}</p><h3>{tx('assistant')}</h3><p>{tx('creditsNote')}</p></div><ul>{featureCredits.map(film=><li key={film}>{film}<span>{tx('assistant')}</span></li>)}</ul></div>
       </section>
       <section id="process" className="process-section section-shell"><div className="section-heading"><h2 className="display-title">{tx('processTitle')}</h2><p>{tx('processBody')}</p></div><div className="process-steps">{steps.map((step,index)=><div key={index}><span className="step-number">{String(index+1).padStart(2,'0')}</span><h3>{text(step.title,lang)}</h3><p>{text(step.body,lang)}</p></div>)}</div><div className="toolbox"><div><h3>{tx('toolTitle')}</h3><p>{tx('toolBody')}</p></div><div>{toolGroups.map(group=><div className="tool-group" key={group.title.pt}><span className="eyebrow">{text(group.title,lang)}</span><p>{group.items.map(item=><span key={item}>{item}</span>)}</p></div>)}</div></div></section>
-      <section id="beyond" className="beyond-section section-shell"><div className="section-heading"><div><p className="eyebrow">{tx('beyond')}</p><h2>{tx('beyondTitle')}</h2></div></div><div className="beyond-grid"><a className="book-card" href="https://thetbeck.github.io/O-ECLIPSE-DO-RIO-ARAGUAIA/" target="_blank" rel="noreferrer"><div className="book-art preview-journey"><img src={sitePath('media/book-lp-hero.png')} alt="Página inicial do livro O Eclipse do Rio Araguaia" loading="lazy"/><img src={sitePath('media/book-lp-joao.png')} alt="" loading="lazy"/><img src={sitePath('media/book-lp-pai.png')} alt="" loading="lazy"/></div><div className="beyond-copy"><span className="eyebrow">{tx('bookType')}</span><h3>O Eclipse do Rio Araguaia</h3><p>{tx('bookBody')}</p><span className="text-button">{tx('bookCta')}<Arrow diagonal/></span></div></a><a className="website-card" href="https://thetbeck.github.io/DoPSite_Reel/" target="_blank" rel="noreferrer"><div className="website-art preview-journey"><img src={sitePath('media/cine-beck-hero.png')} alt="Página inicial do CINE BECK" loading="lazy"/><img src={sitePath('media/cine-beck-documentarios.png')} alt="" loading="lazy"/><img src={sitePath('media/cine-beck-documentarios.png')} alt="" loading="lazy"/></div><div className="beyond-copy"><span className="eyebrow">{tx('siteType')}</span><h3>CINE BECK</h3><p>{tx('siteBody')}</p><span className="text-button">{tx('siteCta')}<Arrow diagonal/></span></div></a><a className="instagram-card" href="https://www.instagram.com/cine.beck/" target="_blank" rel="noreferrer"><div className="instagram-art"><img src={sitePath('media/sonic-telecine-hd.jpg')} alt="" loading="lazy"/><img src={sitePath('media/sony-bravia-rosas-upscale.jpg')} alt="" loading="lazy"/><img src={sitePath('media/amazon-rally-indigena.jpg')} alt="" loading="lazy"/><span>@CINE.BECK</span></div><div className="beyond-copy"><span className="eyebrow">{tx('instagramType')}</span><h3>@cine.beck</h3><p>{tx('instagramBody')}</p><span className="text-button">Instagram <Arrow diagonal/></span></div></a></div></section>
+      <section id="beyond" className="beyond-section section-shell"><div className="section-heading"><div><p className="eyebrow">{tx('beyond')}</p><h2>{tx('beyondTitle')}</h2></div></div><div className="beyond-grid"><a className="book-card" href="https://thetbeck.github.io/O-ECLIPSE-DO-RIO-ARAGUAIA/" target="_blank" rel="noreferrer"><div className="book-art preview-journey"><img src={sitePath('media/book-lp-hero.png')} alt="Página inicial do livro O Eclipse do Rio Araguaia" loading="lazy"/><img src={sitePath('media/book-lp-joao.png')} alt="" loading="lazy"/><img src={sitePath('media/book-lp-pai.png')} alt="" loading="lazy"/></div><div className="beyond-copy"><span className="eyebrow">{tx('bookType')}</span><h3>O Eclipse do Rio Araguaia</h3><p>{tx('bookBody')}</p><span className="text-button">{tx('bookCta')}<Arrow diagonal/></span></div></a><a className="website-card" href="https://thetbeck.github.io/DoPSite_Reel/" target="_blank" rel="noreferrer"><div className="website-art preview-journey"><img src={sitePath('media/cine-beck-hero.png')} alt="Página inicial de Thiago Beck" loading="lazy"/><img src={sitePath('media/cine-beck-documentarios.png')} alt="" loading="lazy"/><img src={sitePath('media/cine-beck-publicidade.png')} alt="" loading="lazy"/></div><div className="beyond-copy"><span className="eyebrow">{tx('siteType')}</span><h3>THIAGO BECK</h3><p>{tx('siteBody')}</p><span className="text-button">{tx('siteCta')}<Arrow diagonal/></span></div></a><a className="instagram-card" href="https://www.instagram.com/cine.beck/" target="_blank" rel="noreferrer"><div className="instagram-art"><img src={sitePath('media/sonic-telecine-hd.jpg')} alt="" loading="lazy"/><img src={sitePath('media/sony-bravia-rosas-upscale.jpg')} alt="" loading="lazy"/><img src={sitePath('media/amazon-rally-indigena.jpg')} alt="" loading="lazy"/><span>@CINE.BECK</span></div><div className="beyond-copy"><span className="eyebrow">{tx('instagramType')}</span><h3>@cine.beck</h3><p>{tx('instagramBody')}</p><span className="text-button">Instagram <Arrow diagonal/></span></div></a></div></section>
       <section id="contact" className="contact-section section-shell"><p className="eyebrow">{tx('contactEyebrow')}</p><div className="contact-main"><h2 className="display-title">{tx('contactTitle')}</h2><a className="contact-arrow" href={whatsapp(lang)} target="_blank" rel="noreferrer" aria-label={tx('whatsapp')}><Arrow diagonal/></a></div><div className="contact-bottom"><p>{tx('contactBody')}</p><div className="contact-methods"><a className="whatsapp-link" href={whatsapp(lang)} target="_blank" rel="noreferrer">{tx('whatsapp')}<Arrow diagonal/></a><a className="email-link" href="mailto:thiago.vincentiis@gmail.com">thiago.vincentiis@gmail.com <Arrow diagonal/></a></div></div><div className="social-row"><span>{tx('socials')}</span><a href="https://www.instagram.com/cine.beck/" target="_blank" rel="noreferrer">Instagram ↗</a><a href="https://vimeo.com/thiagobeck" target="_blank" rel="noreferrer">Vimeo ↗</a><span className="spoken-languages">Português · English · Italiano</span></div></section>
     </main>
-    <footer><a href={localePath(lang)} className="footer-wordmark">THIAGO BECK<span>.</span></a><div><span>© 2026 THIAGO BECK</span><span>{tx('shortRole')}</span><a href="#main">{tx('backTop')} ↑</a></div></footer>
+    <footer><a href={localePath(lang)} className="footer-wordmark">CINE BECK</a><div><span>© 2026 CINE BECK</span><span>{tx('shortRole')}</span><a href="#main">{tx('backTop')} ↑</a></div></footer>
     {selected&&<FilmDialog project={selected} lang={lang} onClose={closeProject} onNext={selected.id?()=>openProject(projects[(projects.findIndex(p=>p.id===selected.id)+1)%projects.length]):null}/>}
   </>;
 }

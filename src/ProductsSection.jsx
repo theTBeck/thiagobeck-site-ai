@@ -33,8 +33,9 @@ export default function ProductsSection({lang,groupId,onGroupChange,onExplore}) 
       </div>
       <figure className="product-visual">
         <div className="product-visual-media has-hover-clip" data-group={group.id}>
-          <img src={sitePath('media/'+group.image+'.jpg')} alt="" width="1440" height="810" loading="lazy"/>
-          <HoverClip key={group.id} src={sitePath('media/loops/'+(group.preview||group.id)+'.mp4')} poster={sitePath('media/'+group.image+'.jpg')}/>
+          {group.loop
+            ? <video className="product-loop" src={sitePath('media/'+group.loop+'.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true" onPlay={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}} onVolumeChange={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}}/>
+            : <><img src={sitePath('media/'+group.image+'.jpg')} alt="" width="1440" height="810" loading="lazy"/><HoverClip key={group.id} src={sitePath('media/loops/'+(group.preview||group.id)+'.mp4')} poster={sitePath('media/'+group.image+'.jpg')}/></>}
         </div>
         <figcaption className="product-photo-credit">{tx('portfolio')} · {group.credit}{illustration&&<> · {text(ui[illustration.kind],lang)}</>}</figcaption>
       </figure>
