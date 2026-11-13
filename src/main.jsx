@@ -49,7 +49,7 @@ function FilmDialog({project,lang,onClose,onNext}) {
     <div className="dialog-inner">
       <div className="dialog-top"><span className="eyebrow">{tx('filmLabel')}</span><button className="icon-button" onClick={onClose} aria-label={tx('close')} autoFocus><Close/></button></div>
       <div className="dialog-player">
-        <video key={source} controls muted playsInline preload="metadata" poster={project.image} src={source} onPlay={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}} onVolumeChange={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}} onError={()=>setFailed(true)} />
+        <video key={source} controls playsInline preload="metadata" poster={project.image} src={source} onError={()=>setFailed(true)} />
         {failed&&<p className="video-error">{tx('playbackError')} <a href={source} target="_blank" rel="noreferrer">{tx('sourceLink')} ↗</a></p>}
       </div>
       <div className="dialog-details">
@@ -73,7 +73,7 @@ function App(){
   const [query,setQuery]=useState('');
   const [archiveFilter,setArchiveFilter]=useState('all');
   const [playing,setPlaying]=useState(false);
-  const [heroMuted,setHeroMuted]=useState(true);
+  const [heroMuted,setHeroMuted]=useState(false);
   const [onHero,setOnHero]=useState(true);
   const [reduceMotion,setReduceMotion]=useState(()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [activeService,setActiveService]=useState('advertising');
@@ -101,20 +101,6 @@ function App(){
     document.querySelector('meta[name="description"]').setAttribute('content',text(ui.heroBody,lang)+' '+text(ui.role,lang)+'.');
   },[lang]);
   useEffect(()=>{
-    const lock=media=>{
-      if(!(media instanceof HTMLMediaElement))return;
-      if(media.muted&&media.volume===0)return;
-      media.muted=true;
-      media.defaultMuted=true;
-      media.volume=0;
-    };
-    const onMedia=event=>lock(event.target);
-    document.querySelectorAll('video,audio').forEach(lock);
-    document.addEventListener('play',onMedia,true);
-    document.addEventListener('volumechange',onMedia,true);
-    return()=>{document.removeEventListener('play',onMedia,true);document.removeEventListener('volumechange',onMedia,true);};
-  },[]);
-  useEffect(()=>{
     const observer=new IntersectionObserver(([entry])=>setOnHero(entry.isIntersecting),{rootMargin:'-86px 0px 0px 0px'});
     if(heroSection.current)observer.observe(heroSection.current);
     return ()=>observer.disconnect();
@@ -123,17 +109,17 @@ function App(){
     const video=hero.current;
     let disposed=false;
     let resumeOnReturn=false;
-    const playMuted=()=>{
+    // Start with the original soundtrack; browser policy may require muted playback.
+    const playWithFallback=()=>video.play().catch(async error=>{
+      if(disposed||error.name!=='NotAllowedError')return;
       video.muted=true;
-      video.defaultMuted=true;
-      video.volume=0;
       setHeroMuted(true);
-      return video.play().catch(()=>{if(!disposed)setPlaying(false);});
-    };
-    playMuted();
+      try{await video.play();}catch{if(!disposed)setPlaying(false);}
+    });
+    playWithFallback();
     const observer=new IntersectionObserver(([entry])=>{
       if(entry.isIntersecting){
-        if(resumeOnReturn){resumeOnReturn=false;playMuted();}
+        if(resumeOnReturn){resumeOnReturn=false;playWithFallback();}
       }else if(!video.paused){
         resumeOnReturn=true;
         video.pause();
@@ -160,13 +146,11 @@ function App(){
   function changeLanguage(next){
     setLang(next);history.pushState({},'',localePath(next)+location.search+location.hash);
   }
-  function keepHeroSilent(){
+  function toggleHeroSound(){
     const video=hero.current;
-    if(!video)return;
-    video.muted=true;
-    video.defaultMuted=true;
-    video.volume=0;
-    setHeroMuted(true);
+    video.muted=!video.muted;
+    setHeroMuted(video.muted);
+    if(!video.muted&&video.paused)video.play().catch(()=>setPlaying(false));
   }
   function navigate(id,kind){
     setMenu(false);
@@ -208,10 +192,10 @@ function App(){
     </>}
     <main id="main">
       <section ref={heroSection} className="hero" aria-labelledby="hero-title">
-        <video ref={hero} className="hero-video" src={sitePath('media/hero-reel-novo-v1.mp4')} poster={sitePath('media/hero-reel-novo-v1.jpg')} muted loop playsInline autoPlay preload="auto" onPlay={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}setPlaying(true);setHeroMuted(true);}} onPause={()=>setPlaying(false)} onVolumeChange={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}setHeroMuted(true);}} aria-hidden="true"/>
+        <video ref={hero} className="hero-video" src={sitePath('media/hero-reel-novo-v1.mp4')} poster={sitePath('media/hero-reel-novo-v1.jpg')} muted={heroMuted} loop playsInline autoPlay preload="auto" onPlay={()=>setPlaying(true)} onPause={()=>setPlaying(false)} onVolumeChange={event=>setHeroMuted(event.currentTarget.muted)} aria-hidden="true"/>
         <div className="hero-shade"/>
         <HeroTypography key={lang} playedRef={heroEntrancePlayed} labels={{label:tx('heroLabel'),countries:tx('countries'),role:tx('heroRole'),heading:tx('heroHeading'),body:tx('heroBody'),watch:tx('watch')}} reelHref={localePath(lang,'reel/')} playIcon={<Play/>} arrowIcon={<Arrow diagonal/>}/>
-        <div className="hero-bottom"><a href="#work" onClick={e=>{e.preventDefault();navigate('work');}}><span className="down-arrow">↓</span>{tx('work')}</a><div className="hero-controls"><button className="hero-sound-toggle" onClick={keepHeroSilent} aria-label={tx('soundOff')} aria-pressed="true"><Sound muted/><span>{tx('soundOff')}</span></button><button className="pause-button" onClick={()=>{if(playing)hero.current.pause();else hero.current.play().catch(()=>setPlaying(false));}} aria-label={tx(playing?'pause':'play')}>{playing?<span className="pause-bars">Ⅱ</span>:<Play/>}</button></div></div>
+        <div className="hero-bottom"><a href="#work" onClick={e=>{e.preventDefault();navigate('work');}}><span className="down-arrow">↓</span>{tx('work')}</a><div className="hero-controls"><button className="hero-sound-toggle" onClick={toggleHeroSound} aria-label={tx(heroMuted?'enableSound':'disableSound')} aria-pressed={!heroMuted}><Sound muted={heroMuted}/><span>{tx(heroMuted?'enableSound':'disableSound')}</span></button><button className="pause-button" onClick={()=>{if(playing)hero.current.pause();else hero.current.play().catch(()=>setPlaying(false));}} aria-label={tx(playing?'pause':'play')}>{playing?<span className="pause-bars">Ⅱ</span>:<Play/>}</button></div></div>
       </section>
       <section id="work" className="work-section section-shell">
         <div className="section-heading"><div><p className="eyebrow">{tx('selectedLabel')}</p><h2>{tx('selected')}</h2></div><p>{tx('selectedBody')}</p></div>
@@ -234,12 +218,12 @@ function App(){
         })}</div>
       </section>
       <section id="food-feature" className="food-feature">
-        <div className="food-image"><video src={sitePath('media/food-reel.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true" onPlay={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}} onVolumeChange={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}}/></div>
+        <div className="food-image"><video src={sitePath('media/food-reel.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true"/></div>
         <div className="food-copy"><p className="eyebrow">{tx('foodEyebrow')}</p><h2 className="display-title">{tx('foodTitle')}</h2><p>{tx('foodBody')}</p></div>
       </section>
       <section id="packshot-feature" className="packshot-section section-shell">
         <div className="packshot-copy"><p className="eyebrow">{tx('packLabel')}</p><h2>{tx('packTitle')}</h2><p>{tx('packBody')}</p><span className="eyebrow pack-items">{tx('packItems')}</span><a className="text-button" href={whatsapp(lang)} target="_blank" rel="noreferrer">{tx('projectCta')}<Arrow diagonal/></a></div>
-        <div className="packshot-visual"><video src={sitePath('media/packshoot-reel.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true" onPlay={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}} onVolumeChange={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}}/></div>
+        <div className="packshot-visual"><video src={sitePath('media/packshoot-reel.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true"/></div>
       </section>
       <section id="entertainment-feature" className="entertainment-feature has-hover-clip">
         <img src={sitePath('media/steve-spiegel.jpg')} alt="" loading="lazy"/><HoverClip src={sitePath('media/loops/characters.mp4')} poster={sitePath('media/steve-spiegel.jpg')}/><div className="entertainment-shade"/><div className="entertainment-copy"><p className="eyebrow">{tx('entertainment')}</p><h2 className="display-title">{tx('entertainmentTitle')}</h2><p>{tx('entertainmentBody')}</p><div className="entertainment-films">{[['Steve Spiegel','steve-spiegel.mp4'],['A História de Davi Santos','historia-davi.mp4'],['Nike Football','nike-football.mp4'],['Epson Canudos','epson-canudos.mp4']].map(([title,file])=><a key={file} className="text-button light" href={sitePath('media/'+file)} target="_blank" rel="noreferrer">{title}<Arrow diagonal/></a>)}</div></div>
@@ -251,7 +235,7 @@ function App(){
             <button aria-expanded={activeService===s.id} aria-controls={'service-content-'+s.id} onClick={()=>setActiveService(activeService===s.id?null:s.id)}>{text(s.title,lang)}<span>{activeService===s.id?'−':'+'}</span></button>
             <div id={'service-content-'+s.id} hidden={activeService!==s.id}><p>{text(s.description,lang)}</p><a href={whatsapp(lang)} target="_blank" rel="noreferrer">{tx('projectCta')} ↗</a></div>
           </div>)}</div>
-          <div className="service-photo"><video src={sitePath('media/hero-reel-novo-v1.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true" onPlay={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}} onVolumeChange={event=>{const video=event.currentTarget;if(!video.muted||video.volume!==0){video.muted=true;video.volume=0;}}}/><span className="vertical-note">CINE BECK / IMAGEM · IMAGE · IMMAGINE</span></div>
+          <div className="service-photo"><video src={sitePath('media/hero-reel-novo-v1.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true"/><span className="vertical-note">CINE BECK / IMAGEM · IMAGE · IMMAGINE</span></div>
         </div>
       </section>
       <section id="archive" className="archive-section section-shell"><div className="archive-heading"><div><p className="eyebrow">{tx('archiveLabel')}</p><h2>{tx('archive')}</h2><p>{tx('archiveBody')}</p></div><button className="round-arrow" aria-label={tx('archiveOpen')} aria-expanded={archiveOpen} aria-controls="archive-panel" onClick={()=>setArchiveOpen(v=>!v)}>{archiveOpen?<Close/>:<Arrow diagonal/>}</button></div>
