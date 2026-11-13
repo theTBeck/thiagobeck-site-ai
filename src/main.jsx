@@ -178,7 +178,7 @@ function App(){
     <a className="skip-link" href="#main">{tx('skip')}</a>
     <header className={'site-header '+(menu?'menu-open ':'')+(onHero?'over-hero':'')}>
       <a href={localePath(lang)} className="brand" aria-label="Estudio CINE.BECK"><span className="brand-name brand-name--short">C.BECK</span></a>
-      <nav className="desktop-links" aria-label={tx('menu')}>{navLink('work',tx('work'))}{navLink('products',text(productUI.title,lang))}{navLink('about',tx('about'))}{navLink('contact',tx('contact'))}</nav>
+      <nav className="desktop-links" aria-label={tx('menu')}>{navLink('work',tx('work'))}{navLink('food-feature',tx('foodPackNav'))}{navLink('products',text(productUI.title,lang))}{navLink('about',tx('about'))}{navLink('contact',tx('contact'))}</nav>
       <div className="header-tools"><div className="language-switch" aria-label={tx('language')}>{languages.map(code=><button key={code} lang={code} aria-label={languageNames[code]} aria-pressed={lang===code} onClick={()=>changeLanguage(code)}>{code==='pt'?'PT':code.toUpperCase()}</button>)}</div>
       <button ref={menuTrigger} className={'menu-toggle '+(menu?'is-open':'')} aria-label={menu?tx('close'):tx('menu')} aria-expanded={menu} aria-controls="mega-menu" onClick={()=>setMenu(v=>!v)}><span className="menu-label">{menu?tx('close'):tx('menuLabel')}</span><span className="menu-glyph" aria-hidden="true"><i/><i/></span></button></div>
     </header>
@@ -187,7 +187,7 @@ function App(){
       <nav id="mega-menu" ref={mega} className="mega-menu" aria-label={tx('menu')}>
         <div className="mega-primary"><p className="eyebrow">{tx('work')}</p>{['all','ai','filmed','hybrid'].map(kind=><a key={kind} href="#work" onClick={e=>{e.preventDefault();navigate('work',kind);}}>{tx(kind)}<Arrow/></a>)}<a href="#archive" onClick={e=>{e.preventDefault();setArchiveOpen(true);navigate('archive');}}>{tx('archiveOpen')}<Arrow/></a></div>
         <div className="mega-services"><p className="eyebrow">{text(productUI.title,lang)}</p><div>{productGroups.map(group=><a key={group.id} href="#products" onClick={e=>{e.preventDefault();setProductGroup(group.id);navigate('products');}}>{text(group.title,lang)}</a>)}</div></div>
-        <div className="mega-extra">{navLink('expertise',tx('services'))}{navLink('about',tx('about'))}{navLink('process',tx('process'))}{navLink('beyond',tx('beyond'))}{navLink('contact',tx('contact'))}<a href={whatsapp(lang)} target="_blank" rel="noreferrer">WhatsApp <Arrow diagonal/></a></div>
+        <div className="mega-extra">{navLink('food-feature',tx('foodPackNav'))}{navLink('expertise',tx('services'))}{navLink('about',tx('about'))}{navLink('process',tx('process'))}{navLink('beyond',tx('beyond'))}{navLink('contact',tx('contact'))}<a href={whatsapp(lang)} target="_blank" rel="noreferrer">WhatsApp <Arrow diagonal/></a></div>
       </nav>
     </>}
     <main id="main">
@@ -204,6 +204,14 @@ function App(){
           <div className="project-caption"><div><span className="project-process">{project.kind==='ai'?'A.I':tx(typeLabel[project.kind])}</span><h3>{project.title}</h3><p>{text(project.role,lang)}</p></div><Arrow diagonal/></div>
         </button>)}</div>
       </section>
+      <section id="food-feature" className="food-feature">
+        <div className="food-image"><video src={sitePath('media/food-reel.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true"/></div>
+        <div className="food-copy"><p className="eyebrow">{tx('foodEyebrow')}</p><h2 className="display-title">{tx('foodTitle')}</h2><p>{tx('foodBody')}</p></div>
+      </section>
+      <section id="packshot-feature" className="packshot-section section-shell">
+        <div className="packshot-copy"><p className="eyebrow">{tx('packLabel')}</p><h2>{tx('packTitle')}</h2><p>{tx('packBody')}</p><span className="eyebrow pack-items">{tx('packItems')}</span><a className="text-button" href={whatsapp(lang)} target="_blank" rel="noreferrer">{tx('projectCta')}<Arrow diagonal/></a></div>
+        <div className="packshot-visual"><video src={sitePath('media/packshoot-reel.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true"/></div>
+      </section>
       <ProductsSection lang={lang} groupId={productGroup} onGroupChange={setProductGroup} onExplore={()=>navigate('work')}/>
       <section id="reels" className="reels-section section-shell">
         <div className="section-heading"><h2 className="display-title">{tx('reelsTitle')}</h2><p>{tx('reelsIntro')}</p></div>
@@ -216,14 +224,6 @@ function App(){
             <div id={'process-panel-'+kind} className="reel-lane-panel" aria-hidden={!opened}><span className="eyebrow">{tx('processLabel')}</span><strong>{title}</strong><p>{tx(body)}</p></div>
           </article>;
         })}</div>
-      </section>
-      <section id="food-feature" className="food-feature">
-        <div className="food-image"><video src={sitePath('media/food-reel.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true"/></div>
-        <div className="food-copy"><p className="eyebrow">{tx('foodEyebrow')}</p><h2 className="display-title">{tx('foodTitle')}</h2><p>{tx('foodBody')}</p></div>
-      </section>
-      <section id="packshot-feature" className="packshot-section section-shell">
-        <div className="packshot-copy"><p className="eyebrow">{tx('packLabel')}</p><h2>{tx('packTitle')}</h2><p>{tx('packBody')}</p><span className="eyebrow pack-items">{tx('packItems')}</span><a className="text-button" href={whatsapp(lang)} target="_blank" rel="noreferrer">{tx('projectCta')}<Arrow diagonal/></a></div>
-        <div className="packshot-visual"><video src={sitePath('media/packshoot-reel.mp4')} muted loop autoPlay playsInline preload="auto" aria-hidden="true"/></div>
       </section>
       <section id="entertainment-feature" className="entertainment-feature has-hover-clip">
         <img src={sitePath('media/steve-spiegel.jpg')} alt="" loading="lazy"/><HoverClip src={sitePath('media/loops/characters.mp4')} poster={sitePath('media/steve-spiegel.jpg')}/><div className="entertainment-shade"/><div className="entertainment-copy"><p className="eyebrow">{tx('entertainment')}</p><h2 className="display-title">{tx('entertainmentTitle')}</h2><p>{tx('entertainmentBody')}</p><div className="entertainment-films">{[['Steve Spiegel','steve-spiegel.mp4'],['A História de Davi Santos','historia-davi.mp4'],['Nike Football','nike-football.mp4'],['Epson Canudos','epson-canudos.mp4']].map(([title,file])=><a key={file} className="text-button light" href={sitePath('media/'+file)} target="_blank" rel="noreferrer">{title}<Arrow diagonal/></a>)}</div></div>

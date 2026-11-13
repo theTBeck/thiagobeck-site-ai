@@ -9,6 +9,7 @@ export const ui = {
   heroRole: t('Direção criativa de IA / Filmagem live action\n+ still images / VFX supervisor / Virtual production / Unreal Engine', 'AI creative direction / Live-action filming\n+ still images / VFX supervisor / Virtual production / Unreal Engine', 'Direzione creativa AI / Riprese live action\n+ still images / VFX supervisor / Virtual production / Unreal Engine'),
   menuLabel: t('MENU', 'MENU', 'MENU'),
   work: t('FEATURES', 'FEATURES', 'FEATURES'), services: t('Especialidades', 'Expertise', 'Competenze'),
+  foodPackNav: t('FOOD&APPETIZER + PACKSHOT', 'FOOD&APPETIZER + PACKSHOT', 'FOOD&APPETIZER + PACKSHOT'),
   about: t('Trajetória', 'Background', 'Percorso'), process: t('Processo', 'Process', 'Metodo'),
   contact: t('Contato', 'Contact', 'Contatti'), menu: t('Abrir menu', 'Open menu', 'Apri menu'),
   close: t('Fechar', 'Close', 'Chiudi'), skip: t('Ir para o conteúdo', 'Skip to content', 'Vai al contenuto'),
